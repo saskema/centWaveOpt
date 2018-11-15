@@ -31,5 +31,5 @@ XCMS.R was used for preprocessing mzXML files. The Results are returned in a fol
 # replicatesEval.R
 replicatesEval.R was used to genereate boxplots (Figure 2 and Figure S1-5). Results of XCMS.R were collected and renamed according to the corresponding experiment (e.g. "Mix\_High\_Result\_A.csv").
 
-# pseudoMetab.R
+# pseudoMetabEval.R
 This script was used to evaluate pseudometabolomic experiments. After running "XCMS.R" two columns were inserted in the result file. The column "category" was inserted as the second column and contained information of the feature if it was unknown, an adduct, an isotope, or a parent compound. The column "identity" was inserted as the third column of the table and contained information about the the drug from which the feature derives according to the procedure described in the publication. After this preparation the script was run. The results were used to generate Figures 3 and 4, as well as the Figures S6 and S7.
