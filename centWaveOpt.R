@@ -594,81 +594,34 @@ write.csv(results.bandwidth, file = "centWaveOptResults/bandwidthResults.csv")
 save.image(file = "centWaveOpt.RData")
 
 
-## Extract top 3 optimised parameters from corresponding results table
-peakwidth.min.opt <- c(results.peakwidth.min[1, 1], results.peakwidth.min[2, 1], 
-    results.peakwidth.min[3, 1])
-peakwidth.max.opt <- c(results.peakwidth.max[1, 2], results.peakwidth.max[2, 2], 
-    results.peakwidth.max[3, 2])
-ppm.opt <- c(results.ppm[1, 3], results.ppm[2, 3], results.ppm[3, 3])
-snthresh.opt <- c(results.snthresh[1, 4], results.snthresh[2, 4], results.snthresh[3, 
-    4])
-mzdiff.opt <- c(results.mzdiff[1, 5], results.mzdiff[2, 5], results.mzdiff[3, 5])
-prefilter.scan.number.opt <- results.prefilter.scan.number[1, 6]
-prefilter.scan.abundance.opt <- results.prefilter.scan.abundance[1, 7]
-bandwidth.opt <- results.bandwidth[1, 8]
+## Evaluate results tables and summarise parameter values
+parameter <- NULL
+results.peakwidth.min.cropped <- results.peakwidth.min[results.peakwidth.min$cvmed != min(results.peakwidth.min$cvmed),]
+parameter[1] <- max(results.peakwidth.min.cropped$Minimum.Peakwidth[results.peakwidth.min.cropped$cvmed == min(results.peakwidth.min.cropped$cvmed)])
 
+results.peakwidth.max.cropped <- results.peakwidth.max[results.peakwidth.max$cvmed != min(results.peakwidth.max$cvmed),]
+parameter[2] <- max(results.peakwidth.max.cropped$Maximum.Peakwidth[results.peakwidth.max.cropped$cvmed == min(results.peakwidth.max.cropped$cvmed)])
 
-## Combine parameters in matrix and name columns
-parameters.comb <- expand.grid(peakwidth.min.opt, peakwidth.max.opt, ppm.opt, snthresh.opt, 
-    mzdiff.opt, prefilter.scan.number.opt, prefilter.scan.abundance.opt, bandwidth.opt)
-colnames(parameters.comb) <- c("Minimum Peakwidth", "Maximum Peakwidth", "ppm", "S/N Threshold", 
-    "m/z Difference", "Prefilter 1", "Prefilter 2", "bandwidth")
+results.ppm.cropped <- results.ppm[results.ppm$cvmed != min(results.ppm$cvmed),]
+parameter[3] <- max(results.ppm.cropped$ppm[results.ppm.cropped$cvmed == min(results.ppm.cropped$cvmed)])
 
-results.comb <- cbind(parameters.comb, matrix(nrow = length(parameters.comb[, 1]), 
-    ncol = 7, dimnames = list(NULL, c("cvmin", "cv0.25", "cvmed", "cv0.75", "cvmax", 
-        "cviqr", "time"))))
+results.snthresh.cropped <- results.snthresh[results.snthresh$cvmed != min(results.snthresh$cvmed),]
+parameter[4] <- max(results.snthresh.cropped$S.N.Threshold[results.snthresh.cropped$cvmed == min(results.snthresh.cropped$cvmed)])
 
-## Initialize loop for preprocessing and evaluation of feature list
-for (i in 1:length(parameters.comb[, 1])) {
-    ## Record time at start of loop
-    start.time <- Sys.time()
-    
-    ## Preprocessing of raw files
-    set <- xcmsSet(files, method = "centWave", peakwidth = c(parameters.comb[i, 1], 
-        parameters.comb[i, 2]), ppm = parameters.comb[i, 3], snthresh = parameters.comb[i, 
-        4], mzdiff = parameters.comb[i, 5], prefilter = c(parameters.comb[i, 6], 
-        parameters.comb[i, 7]))
-    
-    set <- group.density(set, bw = parameters.comb[i, 8])
-    set.retcor <- retcor(set, method = "obiwarp", plottype = "none")
-    set.retcor <- group.density(set.retcor, bw = parameters.comb[i, 8])
-    set.retcor.2 <- retcor(set.retcor, method = "obiwarp", plottype = "none")
-    set.retcor.2 <- group.density(set.retcor.2, bw = parameters.comb[i, 8])
-    set.filled <- fillPeaks(set.retcor.2)
-    
-    ## Extraction of feature list and saving to hard disc
-    peaklist <- peakTable(set.filled)
-    
-    ## Statistical calculations
-    number.of.replicates <- length(files)
-    peaklist.modified <- peaklist
-    peaklist.modified$abundance.mean <- apply(peaklist.modified[, 9:(8 + number.of.replicates)], 
-        1, FUN = mean, na.rm = T)
-    peaklist.modified$abundance.sd <- apply(peaklist.modified[, 9:(8 + number.of.replicates)], 
-        1, FUN = sd, na.rm = T)
-    peaklist.modified$abundance.cv <- (peaklist.modified$abundance.sd * 100)/peaklist.modified$abundance.mean
-    peaklist.modified <- arrange(peaklist.modified, rt, mz)
-    
-    ## Filter features by retention time (only features between 2 and 12 min) and
-    ## abundance (only feature higher E6)
-    peaklist.modified.filtered <- filter(peaklist.modified, rt > 60, rt < 720, peaklist.modified[, 
-        8] == number.of.replicates)
-    
-    ## Summarising cv distribution in results table
-    results.comb[i, 9] <- round(min(peaklist.modified.filtered$abundance.cv), 0)
-    results.comb[i, 10] <- round(quantile(peaklist.modified.filtered$abundance.cv, 
-        probs = 0.25), 0)
-    results.comb[i, 11] <- round(median(peaklist.modified.filtered$abundance.cv), 
-        0)
-    results.comb[i, 12] <- round(quantile(peaklist.modified.filtered$abundance.cv, 
-        probs = 0.75), 0)
-    results.comb[i, 13] <- round(max(peaklist.modified.filtered$abundance.cv), 0)
-    results.comb[i, 14] <- round(results.comb[i, 11] - results.comb[i, 9], 0)
-    
-    end.time <- Sys.time()
-    results.comb[i, 15] <- round(as.numeric(end.time) - as.numeric(start.time), 0)
-}
+results.mzdiff.cropped <- results.mzdiff[results.mzdiff$cvmed != min(results.mzdiff$cvmed),]
+parameter[5] <- max(results.mzdiff.cropped$m.z.Diff[results.mzdiff.cropped$cvmed == min(results.mzdiff.cropped$cvmed)])
 
-results.comb <- arrange(as.data.frame(results.comb), cvmed, cviqr, time)
-write.csv(results.comb, file = "centWaveOptResults/combResults.csv")
+results.prefilter.scan.number.cropped <- results.prefilter.scan.number[results.prefilter.scan.number$cvmed != min(results.prefilter.scan.number$cvmed),]
+parameter[6] <- max(results.prefilter.scan.number.cropped$Prefilter.1[results.prefilter.scan.number.cropped$cvmed == min(results.prefilter.scan.number.cropped$cvmed)])
+
+results.prefilter.scan.abundance.cropped <- results.prefilter.scan.abundance[results.prefilter.scan.abundance$cvmed != min(results.prefilter.scan.abundance$cvmed),]
+parameter[7] <- max(results.prefilter.scan.abundance.cropped$Prefilter.2[results.prefilter.scan.abundance.cropped$cvmed == min(results.prefilter.scan.abundance.cropped$cvmed)])
+
+results.bandwidth.cropped <- results.bandwidth[results.bandwidth$cvmed != min(results.bandwidth$cvmed),]
+parameter[8] <- max(results.bandwidth.cropped$bandwidth[results.bandwidth.cropped$cvmed == min(results.bandwidth.cropped$cvmed)])
+
+## Export sorted parameter file
+write.csv(t(parameter), "centWaveOptResults/parameter.csv", row.names = FALSE)
+
+## Save data set for hard drive
 save.image(file = "centWaveOpt.RData")
