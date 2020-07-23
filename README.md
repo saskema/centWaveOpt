@@ -6,6 +6,8 @@ Use it to initially optimise for your peak XCMS parameters. In a first step the 
 Place your XCMS readable files in a folder called "QC" and place it in your working directory. Specify your file ending in the beginning of the script and run it. The script will create a folder in your working directory called "centWaveOptResults" where it will save all the parameter sweeping results in CSV files.
 After you obtained the CSV files open each and choose those XCMS parameters that led to the second lowest median coefficient of variation. If this applies to several parameters use that one which included more features (e.g. lowest minimum peakwidth, highest maximum peakwidth).
 
+__There is now a "devel" branch that contains a modified version of this script in order to evluate each results table automatically. However, this will not be merged into the master branch to preserve the script as it was used in the corresponding publication.__
+
 ## Dependencies
 This script requires tidyverse and XCMS. If not installed you can use the following lines to install them:
 
