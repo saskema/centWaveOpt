@@ -133,7 +133,7 @@ results.peakwidth.min <- cbind(parameters.peakwidth.min, matrix(nrow = length(pe
                                                                                         "cvmed", "cv0.75",
                                                                                         "cvmax","cviqr",
                                                                                         "time"))))
-results.peakwidth.max <- cbind(parameters.peakwidth.max, matrix(nrow = length(peakwidth.max), col = 7,
+results.peakwidth.max <- cbind(parameters.peakwidth.max, matrix(nrow = length(peakwidth.max), ncol = 7,
                                                                 dimnames = list(NULL, c("cvmin", "cv0.25",
                                                                                         "cvmed", "cv0.75",
                                                                                         "cvmax", "cviqr",
