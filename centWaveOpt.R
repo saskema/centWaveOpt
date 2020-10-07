@@ -20,6 +20,48 @@ format <- ".mzXML"
 library("tidyverse")
 library("xcms")
 
+## Define Functions
+
+eval.results <- function(table, parameters, reference, minmax = c("min", "max")) {
+
+    parameters <- table[,parameters]
+    reference <- table[,reference]
+    
+    parameters.cropped <- parameters[reference != min(reference)]
+    reference.cropped <- reference[reference != min(reference)]
+
+    if(minmax == "max") {
+
+        if(length(parameters.cropped) == 0) {
+
+            result <- max(parameters)
+
+        } else{
+
+            result <- max(parameters.cropped[reference.cropped == min(reference.cropped)])
+
+        }
+
+    }
+
+    if(minmax == "min") {
+
+        if(length(parameters.cropped) == 0) {
+
+            result <- min(parameters)
+
+        } else{
+
+            result <- min(parameters.cropped[reference.cropped == min(reference.cropped)])
+
+        }
+
+    }
+
+    return(result)
+
+}
+
 ## Load file paths and directory names
 files <- list.files(path = "QC", recursive = TRUE, full.names = TRUE, pattern = format)
 
@@ -595,33 +637,29 @@ save.image(file = "centWaveOpt.RData")
 
 
 ## Evaluate results tables and summarise parameter values
-parameter <- NULL
-results.peakwidth.min.cropped <- results.peakwidth.min[results.peakwidth.min$cvmed != min(results.peakwidth.min$cvmed),]
-parameter[1] <- max(results.peakwidth.min.cropped$Minimum.Peakwidth[results.peakwidth.min.cropped$cvmed == min(results.peakwidth.min.cropped$cvmed)])
-
-results.peakwidth.max.cropped <- results.peakwidth.max[results.peakwidth.max$cvmed != min(results.peakwidth.max$cvmed),]
-parameter[2] <- max(results.peakwidth.max.cropped$Maximum.Peakwidth[results.peakwidth.max.cropped$cvmed == min(results.peakwidth.max.cropped$cvmed)])
-
-results.ppm.cropped <- results.ppm[results.ppm$cvmed != min(results.ppm$cvmed),]
-parameter[3] <- max(results.ppm.cropped$ppm[results.ppm.cropped$cvmed == min(results.ppm.cropped$cvmed)])
-
-results.snthresh.cropped <- results.snthresh[results.snthresh$cvmed != min(results.snthresh$cvmed),]
-parameter[4] <- max(results.snthresh.cropped$S.N.Threshold[results.snthresh.cropped$cvmed == min(results.snthresh.cropped$cvmed)])
-
-results.mzdiff.cropped <- results.mzdiff[results.mzdiff$cvmed != min(results.mzdiff$cvmed),]
-parameter[5] <- max(results.mzdiff.cropped$m.z.Diff[results.mzdiff.cropped$cvmed == min(results.mzdiff.cropped$cvmed)])
-
-results.prefilter.scan.number.cropped <- results.prefilter.scan.number[results.prefilter.scan.number$cvmed != min(results.prefilter.scan.number$cvmed),]
-parameter[6] <- max(results.prefilter.scan.number.cropped$Prefilter.1[results.prefilter.scan.number.cropped$cvmed == min(results.prefilter.scan.number.cropped$cvmed)])
-
-results.prefilter.scan.abundance.cropped <- results.prefilter.scan.abundance[results.prefilter.scan.abundance$cvmed != min(results.prefilter.scan.abundance$cvmed),]
-parameter[7] <- max(results.prefilter.scan.abundance.cropped$Prefilter.2[results.prefilter.scan.abundance.cropped$cvmed == min(results.prefilter.scan.abundance.cropped$cvmed)])
-
-results.bandwidth.cropped <- results.bandwidth[results.bandwidth$cvmed != min(results.bandwidth$cvmed),]
-parameter[8] <- max(results.bandwidth.cropped$bandwidth[results.bandwidth.cropped$cvmed == min(results.bandwidth.cropped$cvmed)])
+summary <- rep(NA, 8)
+names(summary) <- c("Minimum Peakwidth", "Maximum Peakwidth", "ppm",
+                    "S/N Threshold", "m/z Difference", "Prefilter 1",
+                    "Prefilter 2", "bandwidth")
+summary[1] <- eval.results(table = results.peakwidth.min,
+                             parameters = 1, reference = 11, minmax = "min")
+summary[2] <- eval.results(table = results.peakwidth.max,
+                             parameters = 2, reference = 11, minmax = "max")
+summary[3] <- eval.results(table = results.ppm,
+                             parameters = 3, reference = 11, minmax = "max")
+summary[4] <- eval.results(table = results.snthresh,
+                             parameters = 4, reference = 11, minmax = "min")
+summary[5] <- eval.results(table = results.mzdiff,
+                             parameters = 5, reference = 11, minmax = "max")
+summary[6] <- eval.results(table = results.prefilter.scan.number,
+                             parameters = 6, reference = 15, minmax = "max")
+summary[7] <- eval.results(table = results.prefilter.scan.abundance,
+                             parameters = 7, reference = 15, minmax = "max")
+summary[8] <- eval.results(table = results.bandwidth,
+                           parameters = 8, reference = 11, minmax = "max")
 
 ## Export sorted parameter file
-write.csv(t(parameter), "centWaveOptResults/parameter.csv", row.names = FALSE)
+write.csv(t(summary), "centWaveOptResults/summary.csv", row.names = FALSE)
 
 ## Save data set for hard drive
 save.image(file = "centWaveOpt.RData")
