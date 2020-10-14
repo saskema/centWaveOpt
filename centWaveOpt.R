@@ -652,9 +652,9 @@ summary[4] <- eval.results(table = results.snthresh,
 summary[5] <- eval.results(table = results.mzdiff,
                              parameters = 5, reference = 11, minmax = "max")
 summary[6] <- eval.results(table = results.prefilter.scan.number,
-                             parameters = 6, reference = 15, minmax = "max")
+                             parameters = 6, reference = 15, minmax = "min")
 summary[7] <- eval.results(table = results.prefilter.scan.abundance,
-                             parameters = 7, reference = 15, minmax = "max")
+                             parameters = 7, reference = 15, minmax = "min")
 summary[8] <- eval.results(table = results.bandwidth,
                            parameters = 8, reference = 11, minmax = "max")
 
