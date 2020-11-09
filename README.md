@@ -1,7 +1,7 @@
 # Supplementary Material
 The code provided by this repository is part of the supplementary material for the paper "Automated Optimization of XCMS Parameters for Improved Peak Picking of LC-MS Data using the Coefficient of Variation and Parameter Sweeping for Untargeted Metabolomic" by Sascha K. Manier et al., Drug Testing and Analysis, 2018. See the following sections for detailed information about it.
 
-__There is now a "devel" branch that contains a modified version of this script in order to evluate each results table automatically. However, this will not be merged into the master branch to preserve the script as it was used in the corresponding publication.__
+__There is now a "devel" branch that contains a modified version of ___centWaveOpt.R___ in order to evaluate each results table automatically. However, this will not be merged into the master branch to preserve the script as it was used in the corresponding publication.__
 
 # Dependencies
 The code deployed by this repository require the following packages:
